@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>住宅購入 資金計画シミュレーター（準備中）</title>
+<style>
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Hiragino Sans", "Noto Sans JP", "Yu Gothic", sans-serif;
+    background: #f7f3e8;
+    color: #1f3d2b;
+  }
+  main {
+    max-width: 480px;
+    margin: 24px;
+    padding: 32px 28px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    text-align: center;
+  }
+  h1 { font-size: 1.3rem; margin: 0 0 12px; }
+  p { line-height: 1.7; margin: 0 0 16px; }
+  .tag {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 999px;
+    background: #e8832a;
+    color: #fff;
+    font-size: 0.85rem;
+  }
+  button {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    background: #1f3d2b;
+    color: #fff;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  #result { margin-top: 16px; min-height: 1.5em; font-weight: bold; }
+</style>
+</head>
+<body>
+<main>
+  <span class="tag">準備中</span>
+  <h1>住宅購入 資金計画シミュレーター</h1>
+  <p>このページは公開の動作確認用です。<br>計算機能は、このあと追加します。</p>
+  <button id="check">JavaScriptの動作確認</button>
+  <div id="result"></div>
+</main>
+<script>
+  document.getElementById("check").addEventListener("click", function () {
+    document.getElementById("result").textContent = "動作OK：1 + 1 = " + (1 + 1);
+  });
+</script>
+</body>
+</html>
