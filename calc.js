@@ -43,8 +43,8 @@
     return Math.floor(fee * (1 + b.consumptionTax));
   }
 
-  // 登録免許税：課税標準は1,000円未満切捨、税額は100円未満切捨
-  const regTax = (base, rate) => base > 0 ? floorTo(floorTo(base, 1000) * rate, 100) : 0;
+  // 登録免許税：課税標準は1,000円未満切捨（1,000円未満は1,000円）、税額は100円未満切捨、1,000円未満は1,000円（法務局）
+  const regTax = (base, rate) => base > 0 ? Math.max(1000, floorTo(Math.max(1000, floorTo(base, 1000)) * rate, 100)) : 0;
 
   // 中古の耐震要件：1982年1月以後の新築、またはそれ以前で証明あり。新築年月が空欄なら満たすとみなす
   function seismicOK(R, i) {
@@ -160,11 +160,13 @@
       }
     }
     const bBase = floorTo(Math.max(0, ev.bldg - deduction), 1000);
-    const bldg = floorTo(bBase * a.rate, 100);
+    let bldg = floorTo(bBase * a.rate, 100);
+    if (bBase < a.exemptBuilding) bldg = 0; // 免税点（売買による家屋）
 
     const landBase = floorTo(ev.land / 2, 1000);
     let land = floorTo(landBase * a.rate, 100), lLabel;
-    if (!houseOK) lLabel = "宅地の課税標準1/2・税率3%（住宅用土地の減額なし）";
+    if (landBase < a.exemptLand) { land = 0; lLabel = `課税標準が免税点（${a.exemptLand / MAN}万円）未満のため非課税`; }
+    else if (!houseOK) lLabel = "宅地の課税標準1/2・税率3%（住宅用土地の減額なし）";
     else if (i.siteArea > 0) {
       const perSqm = (ev.land / 2) / i.siteArea;
       const area = Math.min((floor || 0) * 2, a.landAreaCap);
@@ -176,7 +178,8 @@
       lLabel = "敷地面積が未入力のため、住宅用土地の減額で0円とみなす";
     }
     const exp = expired(a.validUntil, today) ? [`税率3%・宅地1/2の特例（${a.validUntil}まで）`] : [];
-    return { amount: bldg + land, bldg, land, bLabel: `${dLabel}・税率3%${ev.estimated ? "／評価額は概算" : ""}`, lLabel, notes, expired: exp };
+    const bExempt = bBase < a.exemptBuilding && bBase > 0 ? `・課税標準が免税点（${a.exemptBuilding / MAN}万円）未満のため非課税` : "";
+    return { amount: bldg + land, bldg, land, bLabel: `${dLabel}・税率3%${bExempt}${ev.estimated ? "／評価額は概算" : ""}`, lLabel, notes, expired: exp };
   }
 
   function schedule(P, ratePct, years, method) {
@@ -215,7 +218,7 @@
     if (floor !== null && strict && floor < L.floorMinStrict) { res.notes.push(`合計所得1,000万円超の場合は床面積${L.floorMinStrict}㎡以上が必要なため対象外`); return res; }
 
     const perf = PERF[i.perf] ? i.perf : "other";
-    let lim = L.limits[t.isNew ? "new" : "used"][perf];
+    let lim = L.limits[t.isNew ? "new" : (i.resale ? "resale" : "used")][perf];
     if (t.isNew && perf === "energy" && moveIn >= 2028) { lim = L.newEnergyFrom2028; res.notes.push("2028年以降入居の省エネ基準適合の新築は、2027年末までに建築確認を受けた場合などに限り対象"); }
     if (!lim) { res.notes.push("省エネ基準を満たさない新築住宅は対象外（2023年末までに建築確認を受けたものを除く）"); return res; }
     let limit = lim[0];
@@ -223,13 +226,13 @@
       if (floor !== null && floor < L.floorMinStrict) res.notes.push(`子育て世帯等の上乗せは床面積${L.floorMinStrict}㎡以上が必要なため、上乗せなしで計算`);
       else limit = lim[1];
     }
-    if (!t.isNew && i.resale) res.notes.push("買取再販住宅は既存住宅の限度額で計算しています");
     const years = Math.min(lim[2], sched.rows.length);
     const share = Math.min(1, price / loan); // 諸費用分の借入は控除の対象外
     if (share < 1) res.notes.push("諸費用分の借入は控除の対象外として、物件価格に相当する部分だけで計算");
 
     const hasTax = i.incomeTax !== null && i.incomeTax !== undefined && !isNaN(i.incomeTax);
-    const cap = hasTax ? i.incomeTax * MAN + Math.min((i.residentTax || 0) * MAN, L.residentTaxCap) : Infinity;
+    // 住民税からは課税総所得金額等の5%（最高9.75万円）まで。課税総所得金額等の5%は所得割（約10%）の半分で近似
+    const cap = hasTax ? i.incomeTax * MAN + Math.min((i.residentTax || 0) * MAN * L.residentTaxShare, L.residentTaxCap) : Infinity;
     for (let y = 0; y < years; y++) {
       const bal = sched.rows[y].balance * share;
       let d = floorTo(Math.min(bal, limit) * L.rate, 100);
@@ -240,7 +243,7 @@
     res.first = res.rows.length ? res.rows[0].amount : 0;
     res.applies = res.total > 0;
     res.years = years; res.limit = limit;
-    res.label = `${PERF[perf]}・${t.isNew ? "新築" : "中古"}${limit > lim[0] ? "・子育て等の上乗せ" : ""}`;
+    res.label = `${PERF[perf]}・${t.isNew ? "新築" : (i.resale ? "買取再販" : "中古")}${limit > lim[0] ? "・子育て等の上乗せ" : ""}`;
     res.maxOnly = !hasTax;
     return res;
   }
@@ -253,7 +256,7 @@
     const bFixed = ev.bldg * p.fixedRate, bCity = ev.bldg * p.cityRate;
     let halfYears = 0;
     const floor = i.floor > 0 ? i.floor : 70;
-    if (t.isNew && floor >= 50) {
+    if (t.isNew && floor >= p.newHalfFloorMin && floor <= p.newHalfFloorMax) {
       halfYears = i.perf === "long"
         ? (t.mansion ? p.newHalfYearsLongLifeMansion : p.newHalfYearsLongLife)
         : (t.mansion ? p.newHalfYearsMansion : p.newHalfYears);

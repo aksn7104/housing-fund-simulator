@@ -42,6 +42,11 @@ const cases = [
   ["T-20", "45㎡・子育ての限度額", () => { const d = run({ perf: "energy", floor: 45, kids: true }).deduction; return d.limit + "/" + d.notes.some(n => n.includes("上乗せなし")); }, "20000000/true"],
   ["T-21", "2031年入居", () => { const d = run({ moveIn: 2031 }).deduction; return d.total + "/" + d.notes.some(n => n.includes("対象外")); }, "0/true"],
   ["T-22", "月々の住居費", () => Math.round(run({ mgmt: 15000, repair: 12000, propTax: 120000 }).monthlyCost), 123635],
+  ["T-23", "買取再販・長期優良の控除限度額", () => { const d = run({ resale: true, perf: "long" }).deduction; return d.limit + "/" + d.years; }, "45000000/13"],
+  ["T-24", "取得税の免税点（家屋34万円）", () => [
+    run({ type: "usedHouse", built: "2000-04", bldgEval: 1250, landEval: 0 }).acquisition.bldg,
+    run({ type: "usedHouse", built: "2000-04", bldgEval: 1230, landEval: 0 }).acquisition.bldg].join("/"), "15000/0"],
+  ["T-25", "税額による控除の上限（所得税5万円・住民税所得割10万円）", () => run({ incomeTax: 5, residentTax: 10 }).deduction.first, 100000],
 ];
 
 let fail = 0;

@@ -47,7 +47,9 @@ window.RATES = {
     "seismicFrom": "1982-01",
     "source": "https://www.nta.go.jp/publication/pamph/sonota/0020003-124_01.pdf",
     "source2": "https://www.nta.go.jp/publication/pamph/sonota/0020003-124_02.pdf",
-    "checkedAt": "2026-09-23"
+    "source3": "https://houmukyoku.moj.go.jp/homu/content/001443859.pdf",
+    "minTax": 1000,
+    "checkedAt": "2026-10-25"
   },
 
   "acquisition": {
@@ -60,6 +62,8 @@ window.RATES = {
     "newDeduction": 12000000,
     "newDeductionLongLife": 13000000,
     "landReductionMin": 45000,
+    "exemptLand": 160000,
+    "exemptBuilding": 340000,
     "landAreaCap": 200,
     "usedDeduction": [
       ["1997-04", 12000000], ["1989-04", 10000000], ["1985-07", 4500000], ["1981-07", 4200000],
@@ -68,7 +72,9 @@ window.RATES = {
     "source": "https://www.pref.chiba.lg.jp/zeimu/aramashi/shurui/hudousan-keigen.html",
     "source2": "https://www.tax.metro.tokyo.lg.jp/shitsumon/real_estate/f",
     "checkedAt": "2026-10-25",
-    "note": "税率3%は千葉県の公式FAQで確認。3%の適用期限は二次情報（2027年3月31日）"
+    "source3": "https://www.soumu.go.jp/main_sosiki/jichi_zeisei/czaisei/czaisei_seido/149767_11.html",
+    "source4": "https://www.pref.osaka.lg.jp/o050040/zei/alacarte/fudousan.html",
+    "note": "税率3%と期限は総務省で確認。免税点（2026年4月1日以後の取得：土地16万円、売買による家屋34万円）は大阪府で確認"
   },
 
   "loanDeduction": {
@@ -82,15 +88,20 @@ window.RATES = {
     "incomeStrictOver": 10000000,
     "incomeMax": 20000000,
     "residentTaxCap": 97500,
+    "residentTaxShare": 0.5,
     "limits": {
       "new":  { "long": [45000000, 50000000, 13], "lowcarbon": [45000000, 50000000, 13], "zeh": [35000000, 45000000, 13], "energy": [20000000, 30000000, 13], "other": null },
-      "used": { "long": [35000000, 45000000, 13], "lowcarbon": [35000000, 45000000, 13], "zeh": [35000000, 45000000, 13], "energy": [20000000, 30000000, 13], "other": [20000000, 20000000, 10] }
+      "used": { "long": [35000000, 45000000, 13], "lowcarbon": [35000000, 45000000, 13], "zeh": [35000000, 45000000, 13], "energy": [20000000, 30000000, 13], "other": [20000000, 20000000, 10] },
+      "resale": { "long": [45000000, 50000000, 13], "lowcarbon": [45000000, 50000000, 13], "zeh": [35000000, 45000000, 13], "energy": [20000000, 30000000, 13], "other": [20000000, 20000000, 10] }
     },
     "newEnergyFrom2028": [20000000, 20000000, 10],
     "source": "https://www.mlit.go.jp/jutakukentiku/house/jutakukentiku_house_tk2_000017.html",
     "source2": "https://www.mlit.go.jp/jutakukentiku/house/jutakukentiku_house_tk4_000327.html",
+    "source3": "https://www.mlit.go.jp/jutakukentiku/house/jutakukentiku_house_tk4_000328.html",
+    "source4": "https://www.soumu.go.jp/main_sosiki/jichi_zeisei/czaisei/czaisei_seido/090929.html",
+    "source5": "https://www.nta.go.jp/taxes/shiraberu/taxanswer/shotoku/1211-1.htm",
     "checkedAt": "2026-10-25",
-    "note": "住民税からの控除上限（9.75万円）は二次情報"
+    "note": "住民税からの控除は課税総所得金額等の5%（最高9.75万円、総務省）。課税総所得金額等は住民税所得割の半分で近似"
   },
 
   "propertyTax": {
@@ -104,9 +115,12 @@ window.RATES = {
     "newHalfYearsLongLife": 5,
     "newHalfYearsLongLifeMansion": 7,
     "newHalfAreaCap": 120,
+    "newHalfFloorMin": 40,
+    "newHalfFloorMax": 240,
     "source": "https://www.tax.metro.tokyo.lg.jp/kazei/real_estate/kotei_tosi",
     "checkedAt": "2026-10-25",
-    "note": "都市計画税0.3%は23区の税率。負担調整措置・自治体独自の軽減は反映しない"
+    "source2": "https://www.city.osaka.lg.jp/zaisei/page/0000240566.html",
+    "note": "都市計画税0.3%は23区の税率。新築減額の床面積は2026年4月1日以後の新築で40〜240㎡（大阪市）。負担調整措置・自治体独自の軽減は反映しない"
   },
 
   "screening": {
